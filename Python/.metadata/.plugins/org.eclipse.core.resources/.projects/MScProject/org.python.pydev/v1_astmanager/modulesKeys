@@ -1,1 +1,4 @@
 MODULES_MANAGER_V2
+DatabaseConnect|N:\Documents\MSc_Project\Python\MScProject\src\DatabaseConnect.py
+Main|N:\Documents\MSc_Project\Python\MScProject\src\Main.py
+WiFiConnection|N:\Documents\MSc_Project\Python\MScProject\src\WiFiConnection.py
