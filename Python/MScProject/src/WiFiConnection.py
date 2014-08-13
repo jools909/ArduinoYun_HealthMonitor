@@ -5,7 +5,8 @@ Created on 23 Jul 2014
 '''
 import urllib2
 
-class WiFiConnection:
+class WiFiConnection:   
+    
     def isConnected(self):
         #Tests internet connection by attemping to connect to www.google.com
         #Returns True if able to connect.

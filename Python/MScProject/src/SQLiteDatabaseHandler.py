@@ -28,7 +28,7 @@ class SQLiteDatabaseHandler():
     
     def Insert(self, sqlString):
         '''
-        Executes an INSERT SQL statement.
+        Executes an INSERT/UPDATE/DELETE/REPLACE SQL statement.
         @param sqlString: SQL INSERT statement.
         @return: boolean whether successfully executed
         '''
@@ -60,8 +60,8 @@ class SQLiteDatabaseHandler():
                 db.row_factory = sqlite3.Row
                 cursor = db.cursor()
                 cursor.execute(sqlString)
-                for row in cursor:
-                    rowArraylist.extend([row])
+                for results in cursor:
+                    rowArraylist.extend([results])
             except sqlite3.Error:
                 result = False
             finally:
@@ -70,3 +70,5 @@ class SQLiteDatabaseHandler():
             return False
         else:
             return rowArraylist
+    
+        
