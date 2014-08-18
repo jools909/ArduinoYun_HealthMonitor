@@ -30,9 +30,9 @@ if len(sys.argv) > 1:
         sqlitedb = SQLiteDatabaseHandler.SQLiteDatabaseHandler(dbFolderPath + CurrentSQLiteDB)
         dataToUpload = sqlitedb.Select('''SELECT * FROM Readings WHERE Uploaded = 0''')
         if dataToUpload != False:
-            if dataToUpload != None:
+            if dataToUpload:
                 #Data available to upload, iterate through returned data to make INSERT SQL string.
-                sqlString = "INSERT INTO " + cloudDBtableName + " (DateTime, Reading1) values"
+                sqlString = "INSERT INTO " + cloudDBtableName + " (DateTime, Reading1) VALUES"
                 for rows in dataToUpload:
                     sqlString += " ('%s', %s)," % (rows['DateTime'], rows['Reading'])
                 sqlString = sqlString[:-1]
@@ -58,7 +58,7 @@ if len(sys.argv) > 1:
                             cloudDB.commit()
                             uploadSuccess = True
                         except pyodbc.Error as e:
-                            print 'Error: ' + e.args
+                            print 'Error: ' + str(e.args)
                         finally:
                             cloudDB.close()
                         
@@ -78,7 +78,8 @@ if len(sys.argv) > 1:
                                         #(Cannot restart loop as readings would then be 
                                         #duplicated on cloud database)
                                         time.sleep(1)
-                            #Loop completed successfully.
+                            #Loop cycle completed successfully.
+                            print 'Loop cycle completed successfully.'
                         else:
                             print 'Error: Cloud database INSERT query failed.'
                             #Wait 1 second and restart while loop

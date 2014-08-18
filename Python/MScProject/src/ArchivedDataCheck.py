@@ -33,8 +33,8 @@ for fileOb in fileList:
         
         #If non-uploaded readings are found, an SQL INSERT string is created.
         sqlString = ''
-        if results != None:
-            sqlString = "INSERT INTO " + cloudDBtableName + " (DateTime, Reading1) values"
+        if results:
+            sqlString = "INSERT INTO " + cloudDBtableName + " (DateTime, Reading1) VALUES"
             for rows in results:
                 sqlString += " ('%s', %s)," % (rows['DateTime'], rows['Reading'])
             sqlString = sqlString[:-1]
