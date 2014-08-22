@@ -1,7 +1,7 @@
 '''
 Created on Aug 6, 2014
 
-@author: Julian
+@author: Julian Ostmo
 '''
 import sqlite3
 
