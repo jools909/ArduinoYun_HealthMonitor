@@ -6,37 +6,36 @@ Created on Aug 6, 2014
 
 #Tests SQLite database connection class
 
-import SQLiteDatabaseHandler as SQL
 
-db = SQL.SQLiteDatabaseHandler('/tmp/test.db')
-createDB = db.Insert('''CREATE TABLE sensordata (ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+import MySQLdatabaseConnect as MySQL
+import MySQLdb
+
+'''db = SQL.SQLiteDatabaseHandler('C:/Users/Jools/Documents/MSc Project/test.db')
+createDB = db.Insert(CREATE TABLE sensordata (ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                                         DateTime DATETIME NOT NULL,
                                         Sensor1 INT NOT NULL,
-                                        Uploaded INT NOT NULL)''')
-if createDB:
-    insertData = [("'2014-05-06 12:13:14'", 1234, 0), 
-                    ("'2014-05-07 14:15:16'", 4321, 0), 
-                    ("'2014-05-08 16:17:18'", 6789, 0)]
-    insertResult = True
-    for segment in insertData:
-        sql = "INSERT INTO sensordata (DateTime, Sensor1, Uploaded) VALUES (%s, %s, %s)" % segment
-        insert = db.Insert(sql)
-        if insert == False:
-            insertResult = False
-    if insertResult:
-        rows = db.Select("SELECT * FROM sensordata WHERE Uploaded = 0")
-        if rows != False:
-            if not rows:
-                print "Empty"
-            else:
-                for results in rows:
-                    print results
-        else:
-            print "SELECT query failed"
-    else:
-        print "INSERT query failed"
+                                        Uploaded INT NOT NULL))
+'''
+
+db = MySQL.MySQLdatabaseConnect().Connect()
+
+if db != False:
+    sql = "INSERT INTO sensordata (DateTime, Sensor1) VALUES "
+    for number in range(3600):
+        sql = sql + " ('2014-05-06 12:13:14', %s)," % number
+    sql = sql[:-1]
+    print sql
+    try:
+        c = db.cursor()
+        c.execute(sql)
+        print "success"
+    except MySQLdb.Error:
+        print "INSERT failed."
+    finally:
+        db.close()
+        print "finsihed"
 else:
-    print "CREATE TABLE query failed"
+    print "Failed to connect"
 
 
 #Tests Wifi Connection class

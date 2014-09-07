@@ -3,22 +3,25 @@ Created on Aug 6, 2014
 
 @author: Julian Ostmo
 @param currentDBfile: current working .db file (i.e. "20140806.db")
+
+Script that schecks archived .db SQLite databases on micro-SD
+and uploads any data that hasn't been uploaded.
 '''
 
 import os
 import sys
 import WiFiConnection
-import DatabaseConnect
+import MySQLdatabaseConnect
 import SQLiteDatabaseHandler
 import time
-import pyodbc
+import MySQLdb
 
-dbFolderPath = '/home/azureuser/Documents/DatabaseFiles/'
+dbFolderPath = '/mnt/sda1/arduino/databases/'
 if len(sys.argv) > 1:
     currentDBfile = sys.argv[1]
 else:
     currentDBfile = ''
-cloudDBtableName = 'Sensor1Table'
+cloudDBtableName = 'sensordata'
 
 #Get list of .db files and sort resultant list
 fileList = os.listdir(dbFolderPath)
@@ -29,14 +32,14 @@ fileList.sort()
 for fileOb in fileList:
     if fileOb != currentDBfile:
         db = SQLiteDatabaseHandler.SQLiteDatabaseHandler(dbFolderPath + fileOb)
-        results = db.Select('''SELECT * FROM Readings WHERE Uploaded = 0''')
+        results = db.Select('''SELECT * FROM sensordata WHERE Uploaded = 0''')
         
         #If non-uploaded readings are found, an SQL INSERT string is created.
         sqlString = ''
         if results:
-            sqlString = "INSERT INTO " + cloudDBtableName + " (DateTime, Reading1) VALUES"
+            sqlString = "INSERT INTO " + cloudDBtableName + " (DateTime, Sensor1) VALUES"
             for rows in results:
-                sqlString += " ('%s', %s)," % (rows['DateTime'], rows['Reading'])
+                sqlString += " ('%s', '%s')," % (rows['DateTime'], rows['Sensor1'])
             sqlString = sqlString[:-1]
             sqlString = str(sqlString)
             
@@ -60,7 +63,7 @@ for fileOb in fileList:
             #Loop if data upload fails at any point.
             uploadSuccess = False
             while uploadSuccess == False:
-                cloudConnect = DatabaseConnect.DatabaseConnect()
+                cloudConnect = MySQLdatabaseConnect.MySQLdatabaseConnect()
                 cloudDB = cloudConnect.Connect()
                 if cloudDB != False:
                     print 'Connected to cloud database.'
@@ -71,7 +74,7 @@ for fileOb in fileList:
                         cloudDB.commit()
                         uploadSuccess = True
                         print 'Executed INSERT SQL.'
-                    except pyodbc.Error as e:
+                    except MySQLdb.Error as e:
                         print e.args
                     finally:
                         cloudDB.close()
@@ -83,7 +86,7 @@ for fileOb in fileList:
             #Update SQlite .db fileOb so that 'Uploaded' == True (1)
             SQLiteDBupdated = False
             while SQLiteDBupdated == False:
-                updateResult = db.Insert("UPDATE Readings SET Uploaded = 1 WHERE Uploaded = 0")
+                updateResult = db.Insert("UPDATE sensordata SET Uploaded = 1 WHERE Uploaded = 0")
                 if updateResult:
                     SQLiteDBupdated = True
                     print 'SQLite database ' + fileOb + ' updated.'

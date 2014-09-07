@@ -8,7 +8,7 @@ import sqlite3
 import sys
 import os
 
-databasePath = '/home/azureuser/Documents/SensorReadingsFileLog.db'
+databasePath = '/mnt/sda1/arduino/databases/'
 
 #Loop through available process arguments
 for i in range(1,len(sys.argv)):

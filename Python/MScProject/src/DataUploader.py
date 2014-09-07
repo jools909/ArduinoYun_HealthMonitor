@@ -12,29 +12,29 @@ import sys
 import time
 import SQLiteDatabaseHandler
 import WiFiConnection
-import DatabaseConnect
-import pyodbc
+import MySQLdatabaseConnect
+import MySQLdb
 
 #First checks if parameter has been passed to script.
 #If not, script must be restarted with parameter.
 if len(sys.argv) > 1:
     CurrentSQLiteDB = sys.argv[1]
     
-    dbFolderPath = '/home/azureuser/Documents/DatabaseFiles/'
-    cloudDBtableName = 'Sensor1Table'
+    dbFolderPath = '/mnt/sda1/arduino/databases/'
+    cloudDBtableName = 'sensordata'
     wifiCounter = 1
     
     while True:
         #Try to connect to SQLite database 'CurrentSQLiteDB' and execute SELECT query,
         #if an exception occurs 'False' is return, so sleep for 1 sec and restart loop. Else continue.
         sqlitedb = SQLiteDatabaseHandler.SQLiteDatabaseHandler(dbFolderPath + CurrentSQLiteDB)
-        dataToUpload = sqlitedb.Select('''SELECT * FROM Readings WHERE Uploaded = 0''')
+        dataToUpload = sqlitedb.Select('''SELECT * FROM sensordata WHERE Uploaded = 0''')
         if dataToUpload != False:
             if dataToUpload:
                 #Data available to upload, iterate through returned data to make INSERT SQL string.
-                sqlString = "INSERT INTO " + cloudDBtableName + " (DateTime, Reading1) VALUES"
+                sqlString = "INSERT INTO " + cloudDBtableName + " (DateTime, Sensor1) VALUES"
                 for rows in dataToUpload:
-                    sqlString += " ('%s', %s)," % (rows['DateTime'], rows['Reading'])
+                    sqlString += " ('%s', '%s')," % (rows['DateTime'], rows['Sensor1'])
                 sqlString = sqlString[:-1]
                 sqlString = str(sqlString)
                 
@@ -46,7 +46,7 @@ if len(sys.argv) > 1:
                     wifiCounter = 1
                     
                     #Try connecting to cloud database
-                    cloudConnect = DatabaseConnect.DatabaseConnect()
+                    cloudConnect = MySQLdatabaseConnect.MySQLdatabaseConnect()
                     cloudDB = cloudConnect.Connect()
                     if cloudDB != False:
                         
@@ -55,9 +55,8 @@ if len(sys.argv) > 1:
                         uploadSuccess = False
                         try:
                             cloudCursor.execute(sqlString)
-                            cloudDB.commit()
                             uploadSuccess = True
-                        except pyodbc.Error as e:
+                        except MySQLdb.Error as e:
                             print 'Error: ' + str(e.args)
                         finally:
                             cloudDB.close()
@@ -69,7 +68,7 @@ if len(sys.argv) > 1:
                                 rowUpdated = False
                                 while rowUpdated == False:
                                     rowQuery = sqlitedb.Insert(
-                                        '''UPDATE Readings SET Uploaded = 1 WHERE ID = %s''' % rows['ID'])
+                                        '''UPDATE sensordata SET Uploaded = 1 WHERE ID = %s''' % rows['ID'])
                                     if rowQuery:
                                         rowUpdated = True
                                     else:
